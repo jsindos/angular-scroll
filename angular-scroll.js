@@ -152,11 +152,15 @@ angular.module('duScroll.scrollHelpers', ['duScroll.requestAnimation'])
       offset = duScrollOffset;
     }
     const verticalScroll = el.scrollHeight > el.clientHeight;
+    // Here position is a static amount: the distance from the top of the target to the top of the viewport when the container is unscrolled
     var position = verticalScroll ? this.duScrollTop() + unwrap(target).getBoundingClientRect().top - offset :
                                     this.duScrollLeft() + unwrap(target).getBoundingClientRect().left - offset;
     if(isElement(el)) {
+      // Here position becomes a new static amount: the distance from the top of the target to the top of the container, which becomes the amount we scroll
+      // In the case of left we want to change the distance scrolled such that it is to the middle
+      // Add the clientWidth of the container
       position = verticalScroll ? position - el.getBoundingClientRect().top :
-                                  position - el.getBoundingClientRect().left;
+                                  position - el.getBoundingClientRect().left - 0.5*el.getBoundingClientRect().width + 0.5*unwrap(target).getBoundingClientRect().width;
     }
     return verticalScroll ? this.duScrollTo(0, position, duration, easing) : this.duScrollTo(position, 0, duration, easing);
   };
