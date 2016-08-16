@@ -151,11 +151,14 @@ angular.module('duScroll.scrollHelpers', ['duScroll.requestAnimation'])
     if(!angular.isNumber(offset) || isNaN(offset)) {
       offset = duScrollOffset;
     }
-    var top = this.duScrollTop() + unwrap(target).getBoundingClientRect().top - offset;
+    const verticalScroll = el.scrollHeight > el.clientHeight;
+    var position = verticalScroll ? this.duScrollTop() + unwrap(target).getBoundingClientRect().top - offset :
+                                    this.duScrollLeft() + unwrap(target).getBoundingClientRect().left - offset;
     if(isElement(el)) {
-      top -= el.getBoundingClientRect().top;
+      position = verticalScroll ? position - el.getBoundingClientRect().top :
+                                  position - el.getBoundingClientRect().left;
     }
-    return this.duScrollTo(0, top, duration, easing);
+    return verticalScroll ? this.duScrollTo(0, position, duration, easing) : this.duScrollTo(position, 0, duration, easing);
   };
 
   proto.duScrollLeft = function(value, duration, easing) {
