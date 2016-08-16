@@ -286,6 +286,7 @@ angular.module('duScroll.spyAPI', ['duScroll.scrollContainerAPI'])
           spy = spies[i];
           pos = spy.getTargetPosition();
           if (!pos) continue;
+          // Target is 20px from top of container AND has not been fully scrolled off screen
           if((duScrollBottomSpy && bottomReached) || (pos.top + spy.offset - containerOffset < 20 && (duScrollGreedy || pos.top*-1 + containerOffset) < pos.height)) {
             //Find the one closest the viewport top or the page bottom if it's reached
             if(!toBeActive || toBeActive[compareProperty] < pos[compareProperty]) {
@@ -310,7 +311,11 @@ angular.module('duScroll.spyAPI', ['duScroll.scrollContainerAPI'])
           spy = spies[i];
           pos = spy.getTargetPosition();
           if (!pos) continue;
-          if((duScrollBottomSpy && rightReached) || (pos.left + spy.offset - containerOffset < 20 && (duScrollGreedy || pos.left*-1 + containerOffset) < pos.width)) {
+          // (pos.left*-1 + containerOffset) is the negative of the distance of the target from the left of the container
+          // We need to incorporate containerEl.clientWidth into the bottom && check
+          if((duScrollBottomSpy && rightReached) || (pos.left + spy.offset - containerOffset < (20 + 0.5*containerEl.clientWidth - 0.5*pos.width)
+            && (pos.left - containerOffset > 0.5*containerEl.clientWidth - 1.5*pos.width)
+            && (duScrollGreedy || pos.left*-1 + containerOffset) < pos.width)) {
             //Find the one closest the viewport top or the page bottom if it's reached
             if(!toBeActive || toBeActive[compareProperty] < pos[compareProperty]) {
               toBeActive = {
