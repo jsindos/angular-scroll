@@ -267,37 +267,61 @@ angular.module('duScroll.spyAPI', ['duScroll.scrollContainerAPI'])
       var container = context.container,
           containerEl = container[0],
           containerOffset = 0,
-          bottomReached;
-
-      if (typeof HTMLElement !== 'undefined' && containerEl instanceof HTMLElement || containerEl.nodeType && containerEl.nodeType === containerEl.ELEMENT_NODE) {
-        containerOffset = containerEl.getBoundingClientRect().top;
-        bottomReached = Math.round(containerEl.scrollTop + containerEl.clientHeight) >= containerEl.scrollHeight;
-      } else {
-        var documentScrollHeight = $document[0].body.scrollHeight || $document[0].documentElement.scrollHeight; // documentElement for IE11
-        bottomReached = Math.round($window.pageYOffset + $window.innerHeight) >= documentScrollHeight;
-      }
-      var compareProperty = (duScrollBottomSpy && bottomReached ? 'bottom' : 'top');
-
-      var i, currentlyActive, toBeActive, spies, spy, pos;
-      spies = context.spies;
-      currentlyActive = context.currentlyActive;
-      toBeActive = undefined;
-
-      for(i = 0; i < spies.length; i++) {
-        spy = spies[i];
-        pos = spy.getTargetPosition();
-        if (!pos) continue;
-
-        if((duScrollBottomSpy && bottomReached) || (pos.top + spy.offset - containerOffset < 20 && (duScrollGreedy || pos.top*-1 + containerOffset) < pos.height)) {
-          //Find the one closest the viewport top or the page bottom if it's reached
-          if(!toBeActive || toBeActive[compareProperty] < pos[compareProperty]) {
-            toBeActive = {
-              spy: spy
-            };
-            toBeActive[compareProperty] = pos[compareProperty];
+          bottomReached,
+          rightReached;
+      var verticalSpy = function() {
+        if (typeof HTMLElement !== 'undefined' && containerEl instanceof HTMLElement || containerEl.nodeType && containerEl.nodeType === containerEl.ELEMENT_NODE) {
+          containerOffset = containerEl.getBoundingClientRect().top;
+          bottomReached = Math.round(containerEl.scrollTop + containerEl.clientHeight) >= containerEl.scrollHeight;
+        } else {
+          var documentScrollHeight = $document[0].body.scrollHeight || $document[0].documentElement.scrollHeight; // documentElement for IE11
+          bottomReached = Math.round($window.pageYOffset + $window.innerHeight) >= documentScrollHeight;
+        }
+        var compareProperty = (duScrollBottomSpy && bottomReached ? 'bottom' : 'top');
+        for(i = 0; i < spies.length; i++) {
+          spy = spies[i];
+          pos = spy.getTargetPosition();
+          if (!pos) continue;
+          if((duScrollBottomSpy && bottomReached) || (pos.top + spy.offset - containerOffset < 20 && (duScrollGreedy || pos.top*-1 + containerOffset) < pos.height)) {
+            //Find the one closest the viewport top or the page bottom if it's reached
+            if(!toBeActive || toBeActive[compareProperty] < pos[compareProperty]) {
+              toBeActive = {
+                spy: spy
+              };
+              toBeActive[compareProperty] = pos[compareProperty];
+            }
           }
         }
       }
+      var horizontalSpy = function() {
+        if (typeof HTMLElement !== 'undefined' && containerEl instanceof HTMLElement || containerEl.nodeType && containerEl.nodeType === containerEl.ELEMENT_NODE) {
+          containerOffset = containerEl.getBoundingClientRect().left;
+          rightReached = Math.round(containerEl.scrollLeft + containerEl.clientWidth) >= containerEl.scrollWidth;
+        } else {
+          var documentScrollWidth = $document[0].body.scrollWidth || $document[0].documentElement.scrollWidth; // documentElement for IE11
+          rightReached = Math.round($window.pageXOffset + $window.innerWidth) >= documentScrollWidth;
+        }
+        var compareProperty = (duScrollBottomSpy && rightReached ? 'right' : 'left');
+        for(i = 0; i < spies.length; i++) {
+          spy = spies[i];
+          pos = spy.getTargetPosition();
+          if (!pos) continue;
+          if((duScrollBottomSpy && rightReached) || (pos.left + spy.offset - containerOffset < 20 && (duScrollGreedy || pos.left*-1 + containerOffset) < pos.width)) {
+            //Find the one closest the viewport top or the page bottom if it's reached
+            if(!toBeActive || toBeActive[compareProperty] < pos[compareProperty]) {
+              toBeActive = {
+                spy: spy
+              };
+              toBeActive[compareProperty] = pos[compareProperty];
+            }
+          }
+        }
+      }
+      var i, currentlyActive, toBeActive, spies, spy, pos;
+          spies = context.spies;
+          currentlyActive = context.currentlyActive;
+          toBeActive = undefined;
+      (containerEl.scrollHeight > containerEl.clientHeight) ? verticalSpy() : horizontalSpy();
 
       if(toBeActive) {
         toBeActive = toBeActive.spy;
